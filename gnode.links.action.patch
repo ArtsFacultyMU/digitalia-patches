@@ -1,0 +1,18 @@
+diff --git a/modules/gnode/gnode.links.action.yml b/modules/gnode/gnode.links.action.yml
+index 37df369..4a68989 100644
+--- a/modules/gnode/gnode.links.action.yml
++++ b/modules/gnode/gnode.links.action.yml
+@@ -3,9 +3,13 @@ group_relationship.group_node_add_page:
+   title: 'Add existing content'
+   appears_on:
+     - 'view.group_nodes.page_1'
++    - 'view.group_nodes.nodes'
++    - 'view.group_nodes.nodes_ordinary'
+ 
+ group_relationship.group_node_create_page:
+   route_name: 'entity.group_relationship.group_node_create_page'
+   title: 'Add new content'
+   appears_on:
+     - 'view.group_nodes.page_1'
++    - 'view.group_nodes.nodes'
++    - 'view.group_nodes.nodes_ordinary'

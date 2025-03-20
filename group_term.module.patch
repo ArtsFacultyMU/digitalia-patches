@@ -1,0 +1,17 @@
+diff --git a/group_term.module b/group_term.module
+index 30958f4..880c6ff 100644
+--- a/group_term.module
++++ b/group_term.module
+@@ -50,12 +50,3 @@ function group_term_entity_operation(EntityInterface $entity) {
+   }
+   return $operations;
+ }
+-
+-/**
+- * Implements hook_query_TAG_alter().
+- */
+-function group_term_query_taxonomy_term_access_alter(AlterableInterface $query) {
+-  $query->addTag('entity_query');
+-  $query->addMetaData('entity_type', 'taxonomy_term');
+-  group_query_entity_query_alter($query);
+-}

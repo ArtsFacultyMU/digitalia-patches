@@ -1,0 +1,38 @@
+diff --git a/src/Persister/Generic.php b/src/Persister/Generic.php
+index 47c8119..70ad2be 100644
+--- a/src/Persister/Generic.php
++++ b/src/Persister/Generic.php
+@@ -53,6 +53,33 @@ class Generic implements PersisterInterface {
+         \Drupal::messenger()->addMessage(t('This node does not have the required field (@field)', ['@field' => $target_field]));
+     }
+     if ($save) {
++      // begin islandora-muni
++      // for some reason datafield subfields containing taxonomy term references
++      // have to be rewritten from objects to their respective ids
++      foreach ($entity->getFieldDefinitions() as $key => $value) {
++        if ($value->getType() == "data_field" && !empty($entity->get($key)->getValue())) {
++    
++          // get all values from datafield
++          $new_value = array();
++          foreach($entity->get($key)->getValue() as $entry) {
++            $new_entry = $entry;
++            foreach($entry as $subfield => $subvalue) {
++              if (is_object($subvalue) && $subvalue->getEntityTypeId() == "taxonomy_term") {
++                $new_entry[$subfield] = $subvalue->id();
++              }
++            }
++            array_push($new_value, $new_entry);
++          }
++    
++	  // remove previous values and resave all taxonomy term objects as target ids
++          unset($entity->{$key});
++          foreach($new_value as $element) {
++            $entity->{$key}[] = $element;
++          }
++        }
++      }
++      // end islandora-muni
++    
+       $entity->save();
+     }
+     return TRUE;

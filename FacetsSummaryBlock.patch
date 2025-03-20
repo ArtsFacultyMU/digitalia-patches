@@ -1,0 +1,15 @@
+diff --git a/modules/facets_summary/src/Plugin/Block/FacetsSummaryBlock.php b/modules/facets_summary/src/Plugin/Block/FacetsSummaryBlock.php
+index fbd1fcb..a115d8e 100644
+--- a/modules/facets_summary/src/Plugin/Block/FacetsSummaryBlock.php
++++ b/modules/facets_summary/src/Plugin/Block/FacetsSummaryBlock.php
+@@ -111,7 +111,9 @@ class FacetsSummaryBlock extends BlockBase implements FacetsSummaryBlockInterfac
+     }
+ 
+     /** @var \Drupal\views\ViewExecutable $view */
+-    if ($view = $facets_summary->getFacetSource()->getViewsDisplay()) {
++// islandora-muni hide empty facet summary block
++    if (($view = $facets_summary->getFacetSource()->getViewsDisplay()) && !empty($build)) {
++//    if ($view = $facets_summary->getFacetSource()->getViewsDisplay()) {
+       $build['#attached']['drupalSettings']['facets_views_ajax'] = [
+         'facets_summary_ajax' => [
+           'facets_summary_id' => $facets_summary->id(),

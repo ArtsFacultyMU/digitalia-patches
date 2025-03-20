@@ -1,0 +1,17 @@
+diff --git a/src/Plugin/metatag/Tag/MetaNameBase.php b/src/Plugin/metatag/Tag/MetaNameBase.php
+index 7e9a3e1d..8292d5ea 100644
+--- a/src/Plugin/metatag/Tag/MetaNameBase.php
++++ b/src/Plugin/metatag/Tag/MetaNameBase.php
+@@ -521,7 +521,11 @@ abstract class MetaNameBase extends PluginBase {
+       $value = PlainTextOutput::renderFromHtml($this->value);
+     }
+ 
+-    $values = $this->multiple() ? explode($separator, $value) : [$value];
++    // begin islandora-muni
++    //$values = $this->multiple() ? explode($separator, $value) : [$value];
++    $values = explode($separator, $value);
++    $this->multiple = true;
++    //end islandora-muni
+     $elements = [];
+     foreach ($values as $value) {
+       $value = $this->tidy($value);

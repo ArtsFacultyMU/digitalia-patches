@@ -1,0 +1,15 @@
+diff --git a/modules/facets_summary/src/FacetsSummaryManager/DefaultFacetsSummaryManager.php b/modules/facets_summary/src/FacetsSummaryManager/DefaultFacetsSummaryManager.php
+index d0570e5..510c363 100644
+--- a/modules/facets_summary/src/FacetsSummaryManager/DefaultFacetsSummaryManager.php
++++ b/modules/facets_summary/src/FacetsSummaryManager/DefaultFacetsSummaryManager.php
+@@ -154,7 +154,9 @@ class DefaultFacetsSummaryManager {
+       if ($result->isActive()) {
+         $item = [
+           '#theme' => 'facets_result_item__summary',
+-          '#value' => $result->getDisplayValue(),
++// islandora-muni add Facet name in front of the selected value
++          '#value' => $result->getFacet()->getName() . ': ' . $result->getDisplayValue(),
++//          '#value' => $result->getDisplayValue(),
+           '#show_count' => $show_count,
+           '#count' => $result->getCount(),
+           '#is_active' => TRUE,

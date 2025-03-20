@@ -1,0 +1,39 @@
+diff --git a/src/Form/AddChildrenWizard/MediaFileSelectionForm.php b/src/Form/AddChildrenWizard/MediaFileSelectionForm.php
+index 534c7309..6f779c89 100644
+--- a/src/Form/AddChildrenWizard/MediaFileSelectionForm.php
++++ b/src/Form/AddChildrenWizard/MediaFileSelectionForm.php
+@@ -27,6 +27,12 @@ class MediaFileSelectionForm extends AbstractFileSelectionForm {
+ 
+     $cached_values = $form_state->getTemporaryValue('wizard');
+     $form_state->setRedirectUrl(Url::fromUri("internal:/node/{$cached_values['node']}/media"));
++
++    // begin islandora-muni
++    if (!is_null($cached_values["return_destination"])) {
++      $form_state->setRedirectUrl(Url::fromUri("internal:{$cached_values["return_destination"]}"));
++    }
++    // end islandora-muni
+   }
+ 
+ }
+diff --git a/src/Form/AddChildrenWizard/MediaTypeSelectionForm.php b/src/Form/AddChildrenWizard/MediaTypeSelectionForm.php
+index b06d004d..109ee025 100644
+--- a/src/Form/AddChildrenWizard/MediaTypeSelectionForm.php
++++ b/src/Form/AddChildrenWizard/MediaTypeSelectionForm.php
+@@ -221,6 +221,17 @@ class MediaTypeSelectionForm extends FormBase {
+     foreach (static::keysToSave() as $key) {
+       $cached_values[$key] = $form_state->getValue($key);
+     }
++
++    // begin islandora-muni
++    // save return path for later
++    if (\Drupal::request()->query->has('destination')) {
++    	$cached_values["return_destination"] = \Drupal::request()->query->get('return_destination');
++    	$cached_values["return_destination"] = \Drupal::request()->query->get('destination');
++    	\Drupal::request()->query->remove('destination');
++    	\Drupal::request()->query->set('return_destination', $cached_valued["return_destination"]);
++    }
++    // end islandora-muni
++
+     $form_state->setTemporaryValue('wizard', $cached_values);
+   }
+ 

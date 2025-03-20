@@ -1,0 +1,15 @@
+diff --git a/modules/image/src/Entity/ImageStyle.php b/modules/image/src/Entity/ImageStyle.php
+index 96482393..35b09b28 100644
+--- a/modules/image/src/Entity/ImageStyle.php
++++ b/modules/image/src/Entity/ImageStyle.php
+@@ -188,6 +188,10 @@ class ImageStyle extends ConfigEntityBase implements ImageStyleInterface, Entity
+           $is_writable = $class::getType() & StreamWrapperInterface::WRITE;
+         }
+ 
++        // islandora-muni begin
++        $is_writable = FALSE;
++        // end
++
+         // Compute the derivative URI scheme. Derivatives created from writable
+         // source stream wrappers will inherit the scheme. Derivatives created
+         // from read-only stream wrappers will fall-back to the default scheme.

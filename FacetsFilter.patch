@@ -1,0 +1,24 @@
+diff --git a/modules/facets_exposed_filters/src/Plugin/views/filter/FacetsFilter.php b/modules/facets_exposed_filters/src/Plugin/views/filter/FacetsFilter.php
+index 2fa9b00..e72a11c 100644
+--- a/modules/facets_exposed_filters/src/Plugin/views/filter/FacetsFilter.php
++++ b/modules/facets_exposed_filters/src/Plugin/views/filter/FacetsFilter.php
+@@ -134,10 +134,15 @@ class FacetsFilter extends FilterPluginBase {
+       );
+       $query_type_plugin->build();
+ 
+-      // When no results are available, we do not need to process the facet or render the form item.
+-      if(!$facet->getResults()) {
+-        return;
+-      }
++      // begin islandora-muni
++      // hiding empty facets would change the search form and confuse users
++
++      //// When no results are available, we do not need to process the facet or render the form item.
++      //if(!$facet->getResults()) {
++      //  return;
++      //}
++
++      // end islandora-muni
+ 
+       // Trigger post query stage.
+       $processors = $facet->getProcessorsByStage(ProcessorInterface::STAGE_POST_QUERY);

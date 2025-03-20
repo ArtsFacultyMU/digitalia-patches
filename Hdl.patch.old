@@ -1,0 +1,146 @@
+diff --git a/modules/hdl/src/Minter/Hdl.php b/modules/hdl/src/Minter/Hdl.php
+index 184cc42..e5b2630 100644
+--- a/modules/hdl/src/Minter/Hdl.php
++++ b/modules/hdl/src/Minter/Hdl.php
+@@ -3,6 +3,7 @@
+ namespace Drupal\hdl\Minter;
+ 
+ use Drupal\persistent_identifiers\MinterInterface;
++use GuzzleHttp\Client;
+ use GuzzleHttp\Exception\ClientException;
+ use GuzzleHttp\Exception\ConnectException;
+ //use MongoDB\Driver\Exception\ConnectionException;
+@@ -113,6 +114,8 @@ class Hdl implements MinterInterface
+     return $full_handle;
+   } */
+ 
++// begin islandora-muni
++// add support for qualifier, don't append hash to handle
+   public function mint($entity, $extra = NULL)
+   {
+     $config = \Drupal::config('hdl.settings');
+@@ -120,19 +123,37 @@ class Hdl implements MinterInterface
+     $admin_handle = $config->get('hdl_admin_handle');
+     $handle_admin_index = $config->get('hdl_admin_index');
+     $private_key_pem = $config->get('hdl_admin_private_key');
++    $prefix = $config->get('hdl_prefix');
++    $qualifier = $config->get('hdl_qualifier');
+ 
+-    $url = $extra;
++    //$url = $extra;
+ 
+-    \Drupal::logger("example")->debug("endpoint_url - $endpoint_url");
++    $short_handle = $qualifier . '.' . $entity->id();
++    $full_handle = $prefix . '/' . $short_handle;
++    $host = \Drupal::request()->getSchemeAndHttpHost();
++
++    $langcode_entity = $entity->language()->getId();
++    $path = preg_replace('/' . "^\\/" . $entity->language()->getId() . '/', "", $entity->toUrl()->toString(), 1); 
++    $url = $host . $path;
+ 
+     try {
+       $clientFactory = \Drupal::service('http_client_factory');
+       $client = $clientFactory->fromOptions(['verify' => FALSE]);
+ 
+-
+       $cnonce = $this->generateRandomString(16);
+ 
+-      //$response1 = \Drupal::httpClient()->post($endpoint_url . "/api/sessions", [
++      $handle_json = [
++        [
++          'index' => 1,
++          'type' => "URL",
++          'data' => [
++            'format' => "string",
++            'value' => $url,
++          ],
++        ]
++      ];
++
++
+       $response1 = $client->post($endpoint_url . "/api/sessions", [
+         'headers' => [
+           'Authorization' => 'Handle cnonce="' . $cnonce . '"',
+@@ -140,6 +161,7 @@ class Hdl implements MinterInterface
+           'Accept' => 'application/json'
+         ],
+       ]);
++
+       $response1_body_array = json_decode($response1->getBody()->getContents(), TRUE);
+ 
+       $sessionId = $response1_body_array["sessionId"];
+@@ -149,8 +171,8 @@ class Hdl implements MinterInterface
+       openssl_sign($data, $signature, $private_key_pem, OPENSSL_ALGO_SHA256);
+       $signature = base64_encode($signature);
+ 
++
+       $response2 = $client->PUT($endpoint_url . "/api/sessions/this", [
+-      //$response2 = \Drupal::httpClient()->PUT($endpoint_url . "/api/sessions/this", [
+         'headers' => [
+           'Authorization' => 'Handle sessionId="' . $sessionId . '",id="' . $handle_admin_index . ':' . $admin_handle . '",type="HS_PUBKEY",cnonce="' . $cnonce . '",alg="SHA256",signature="' . $signature . '"',
+           'Content-Type' => 'application/json',
+@@ -159,19 +181,9 @@ class Hdl implements MinterInterface
+       ]);
+       $response2_body_array = json_decode($response2->getBody()->getContents(), TRUE);
+ 
+-      $handle_json = [
+-        [
+-          'index' => 1,
+-          'type' => "URL",
+-          'data' => [
+-            'format' => "string",
+-            'value' => $url,
+-          ],
+-        ]
+-      ];
+ 
+-      $response3 = $client->PUT($endpoint_url . "/api/handles/" . $admin_handle . "/?overwrite=false&mintNewSuffix=true", [
+-      //$response3 = \Drupal::httpClient()->PUT($endpoint_url . "/api/handles/" . $admin_handle . "/?overwrite=false&mintNewSuffix=true", [
++      // mintNewSuffix set to false (true adds some hash after requested handle)
++      $response3 = $client->PUT($endpoint_url . "/api/handles/" . $prefix . "/" . $short_handle . "?overwrite=false&mintNewSuffix=false", [
+         'headers' => [
+           'Authorization' => 'Handle sessionId="' . $sessionId . '"',
+           'Content-Type' => 'application/json',
+@@ -179,9 +191,19 @@ class Hdl implements MinterInterface
+         ],
+         'json' => $handle_json
+       ]);
++
+       $response3_body_array = json_decode($response3->getBody()->getContents(), TRUE);
+ 
+-      return $response3_body_array["handle"];
++      $this->deleteSession($client, $sessionId, $endpoint_url);
++
++      //return $response3_body_array["handle"];
++      //\Drupal::logger('persistent identifiers')->debug(print_r($response3_body_array, TRUE));
++      if (!($response3_body_array["responseCode"] == 1 || $response3_body_array["responseCode"] == 101)) {
++        \Drupal::logger('persistent identifiers')->error("Creation of handle '" . $response3_body_array["handle"] . "' failed with response code '" . $response3_body_array["responseCode"] . "'.");
++        return FALSE;
++      }
++
++      return $short_handle;
+ 
+       //$this->messenger()->addStatus($this->t('New Handle Created - ') . $handle);
+       //$form_state->setRedirect('<front>');
+@@ -197,6 +219,21 @@ class Hdl implements MinterInterface
+ 
+   }
+ 
++  private function deleteSession(Client $client, String $sessionId, String $endpoint_url)
++  {
++      $response = $client->DELETE($endpoint_url . "/api/sessions/this", [
++        'headers' => [
++          'Authorization' => 'Handle sessionId="' . $sessionId . '"',
++        ],
++      ]);
++      
++      if ($response->getStatusCode() != 204) {
++        \Drupal::logger('persistent identifiers')->warning("Failed to end session. Status code: " . $response->getStatusCode());
++        return;
++      }
++  }
++// end islandora-muni
++
+   public function generateRandomString($length = 10)
+   {
+     $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';

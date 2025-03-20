@@ -1,0 +1,17 @@
+diff --git a/includes/form.inc b/includes/form.inc
+index d6a2eb1c..b027b463 100644
+--- a/includes/form.inc
++++ b/includes/form.inc
+@@ -107,6 +107,12 @@ function form_select_options($element, $choices = NULL) {
+       $option = [];
+       $key = (string) $key;
+       $empty_choice = $empty_value && $key == '_none';
++
++      // islandora-muni datafield error
++      if (getType($element['#value']) == 'object') {
++        $element['#value'] = $element['#value']->id();
++      }
++
+       if ($value_valid && ((!$value_is_array && (string) $element['#value'] === $key || ($value_is_array && in_array($key, $element['#value']))) || $empty_choice)) {
+         $option['selected'] = TRUE;
+       }

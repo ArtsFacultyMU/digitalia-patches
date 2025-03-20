@@ -1,0 +1,15 @@
+diff --git a/lib/Drupal/Core/Entity/Sql/SqlContentEntityStorageSchema.php b/lib/Drupal/Core/Entity/Sql/SqlContentEntityStorageSchema.php
+index 3b3abae2..3879dd87 100644
+--- a/lib/Drupal/Core/Entity/Sql/SqlContentEntityStorageSchema.php
++++ b/lib/Drupal/Core/Entity/Sql/SqlContentEntityStorageSchema.php
+@@ -2565,6 +2565,10 @@ class SqlContentEntityStorageSchema implements DynamicallyFieldableEntityStorage
+     // Preserve legal NULL values.
+     if (isset($value) || !empty($info['not null'])) {
+       if ($info['type'] === 'int' || $info['type'] === 'serial') {
++        // islandora-muni datafield error
++        if (getType($value) == 'object') {
++          $value = $value->id();
++        }
+         return (int) $value;
+       }
+       elseif ($info['type'] === 'float') {

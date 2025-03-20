@@ -1,0 +1,75 @@
+diff --git a/modules/hdl/hdl.module b/modules/hdl/hdl.module
+index 0de87d5..10809fd 100644
+--- a/modules/hdl/hdl.module
++++ b/modules/hdl/hdl.module
+@@ -40,7 +40,8 @@ function hdl_form_alter(&$form, FormStateInterface &$form_state, $form_id) {
+       ],
+       '#required' => TRUE,
+     ];
+-    /*
++
++// begin islandora-muni
+     $form['hdl_qualifier'] = [
+       '#type' => 'textfield',
+       '#access' => TRUE,
+@@ -53,7 +54,33 @@ function hdl_form_alter(&$form, FormStateInterface &$form_state, $form_id) {
+         ],
+       ],
+     ];
+-    */
++
++    $form['hdl_metaplatform_qualifier'] = [
++      '#type' => 'textfield',
++      '#access' => TRUE,
++      '#title' => 'Metaplatform qualifier',
++      '#default_value' => $config->get('hdl_metaplatform_qualifier'),
++      '#description' => t("This string will be used in URL associated with handle. Used in metaplaforms. For example, setting it to \"a3d\" will result in \"https://__hostname__/a3d/node/__nid__\""),
++      '#states' => [
++        'visible' => [
++          ':input[id="persistent_identifiers_minter"]' => ['value' => 'hdl.minter.hdl'],
++        ],
++      ],
++    ];
++
++    $form['hdl_metaplatform_url'] = [
++      '#type' => 'textfield',
++      '#access' => TRUE,
++      '#title' => 'Metaplatform URL',
++      '#default_value' => $config->get('hdl_metaplatform_url'),
++      '#description' => t("This is the URL of metaplatform. It is ignored if Metaplaform qualifier is left empty. Enter with protocol and without trailing slas, e.g. \"https://archeo3data.phil.muni.cz\"."),
++      '#states' => [
++        'visible' => [
++          ':input[id="persistent_identifiers_minter"]' => ['value' => 'hdl.minter.hdl'],
++        ],
++      ],
++    ];
++// end islandora-muni
+ 
+     $form['hdl_admin_handle'] = [
+       '#type' => 'textfield',
+@@ -155,7 +182,11 @@ function hdl_submit(array &$form, FormStateInterface $form_state) {
+   $existing_config = \Drupal::config('hdl.settings');
+   $admin_handle = $form_state->getValue('hdl_admin_handle', $existing_config->get('hdl_admin_handle'));
+   $prefix = $form_state->getValue('hdl_prefix', $existing_config->get('hdl_prefix'));
+-  //$qualifier = $form_state->getValue('hdl_qualifier', $existing_config->get('hdl_qualifier'));
++  // begin islandora-muni
++  $qualifier = $form_state->getValue('hdl_qualifier', $existing_config->get('hdl_qualifier'));
++  $meta_qualifier = $form_state->getValue('hdl_metaplatform_qualifier', $existing_config->get('hdl_metaplatform_qualifier'));
++  $meta_url = $form_state->getValue('hdl_metaplatform_url', $existing_config->get('hdl_metaplatform_url'));
++  // end islandora-muni
+   $api_endpoint = $form_state->getValue('hdl_handle_api_endpoint', $existing_config->get('hdl_handle_api_endpoint'));
+   $index = $form_state->getValue('hdl_admin_index', $existing_config->get('hdl_admin_index'));
+   $permissions = $form_state->getValue('hdl_handle_permissions', $existing_config->get('hdl_handle_permissions'));
+@@ -165,7 +196,11 @@ function hdl_submit(array &$form, FormStateInterface $form_state) {
+   $config_factory->getEditable('hdl.settings')
+     ->set('hdl_admin_handle', trim($admin_handle))
+     ->set('hdl_prefix', trim($prefix))
+-    //->set('hdl_qualifier', trim($qualifier))
++  // begin islandora-muni
++    ->set('hdl_qualifier', trim($qualifier))
++    ->set('hdl_metaplatform_qualifier', trim($meta_qualifier))
++    ->set('hdl_metaplatform_url', trim($meta_url))
++  // end islandora-muni
+     ->set('hdl_handle_api_endpoint', trim($api_endpoint))
+     ->set('hdl_admin_index', trim($index))
+     ->set('hdl_handle_permissions', trim($permissions))

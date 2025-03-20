@@ -1,0 +1,93 @@
+diff --git a/src/Entity/EntityComparison.php b/src/Entity/EntityComparison.php
+index fae900b..2c72662 100755
+--- a/src/Entity/EntityComparison.php
++++ b/src/Entity/EntityComparison.php
+@@ -36,7 +36,8 @@ use Drupal\Core\Url;
+  *     "remove_link_text",
+  *     "limit",
+  *     "entity_type",
+- *     "bundle_type"
++ *     "bundle_type",
++ *     "group_name",
+  *   },
+  *   admin_permission = "administer entity comparison",
+  *   entity_keys = {
+@@ -104,6 +105,15 @@ class EntityComparison extends ConfigEntityBase implements EntityComparisonInter
+    */
+   protected $bundle_type;
+ 
++  // begin islandora-muni
++  /**
++   * The selected group.
++   *
++   * @var string
++   */
++  protected $group_name;
++  // end islandora-muni
++
+   /**
+    * {@inheritdoc}
+    */
+@@ -139,6 +149,15 @@ class EntityComparison extends ConfigEntityBase implements EntityComparisonInter
+     return $this->bundle_type;
+   }
+ 
++  // begin islandora-muni
++  /**
++   * {@inheritdoc}
++   */
++  public function getGroupName() {
++    return $this->group_name;
++  }
++  // end islandora-muni
++
+   /**
+    * Load entity comparison entities by type and bundle.
+    */
+@@ -196,6 +215,7 @@ class EntityComparison extends ConfigEntityBase implements EntityComparisonInter
+         'id' => 'entity-comparison-' . $this->id() . '-' . $entity_id,
+         'data-entity-comparison' => $this->id() . '-' . $entity_id,
+         'class' => [
++          "button",
+           $use_ajax ? 'use-ajax' : '',
+           $add_link ? 'add-link' : 'remove-link',
+         ],
+diff --git a/src/Form/EntityComparisonForm.php b/src/Form/EntityComparisonForm.php
+index 09b562a..3c3a630 100755
+--- a/src/Form/EntityComparisonForm.php
++++ b/src/Form/EntityComparisonForm.php
+@@ -108,6 +108,18 @@ class EntityComparisonForm extends EntityForm {
+       '#disabled' => !$entity_comparison->isNew(),
+     ];
+ 
++    // begin islandora-muni
++    // Group name.
++    $form['group_name'] = [
++      '#type' => 'textfield',
++      '#title' => $this->t('Group name'),
++      '#maxlength' => 3,
++      '#default_value' => $entity_comparison->getGroupName(),
++      '#description' => $this->t('Name of group.'),
++      '#required' => FALSE,
++    ];
++    // end islandora-muni
++
+     // Add link text.
+     $form['add_link_text'] = [
+       '#type' => 'textfield',
+diff --git a/src/Routing/EntityComparisonRoutes.php b/src/Routing/EntityComparisonRoutes.php
+index 6804693..69e4c76 100755
+--- a/src/Routing/EntityComparisonRoutes.php
++++ b/src/Routing/EntityComparisonRoutes.php
+@@ -24,7 +24,10 @@ class EntityComparisonRoutes {
+     foreach ($entity_comparisons as $id => $entity_comparison) {
+       $routes['entity_comparison.compare.' . $id] = new Route(
+       // Path to attach this route to:
+-        '/compare/' . str_replace('_', '-', $id),
++	      // begin islandora-muni
++        '/compare/' . str_replace('_', '-', $id) . '/' . $entity_comparison->getGroupName(),
++	// end islandora-muni
++        //'/compare/' . $entity_comparison->getGroupName() . '/' . str_replace('_', '-', $id),
+         // Route defaults:
+         [
+           '_controller' => '\Drupal\entity_comparison\Controller\EntityComparisonController::compare',
