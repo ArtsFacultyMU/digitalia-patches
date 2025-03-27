@@ -1,0 +1,13 @@
+diff --git a/taxonomy_manager.routing.yml b/taxonomy_manager.routing.yml
+index 93d24a1..98c3be3 100644
+--- a/taxonomy_manager.routing.yml
++++ b/taxonomy_manager.routing.yml
+@@ -20,7 +20,7 @@ taxonomy_manager.settings:
+     _title: 'Advanced settings for the Taxonomy Manager'
+     _form: '\Drupal\taxonomy_manager\Form\TaxonomyManagerAdmin'
+   requirements:
+-    _permission: 'access taxonomy manager list'
++    _permission: 'access taxonomy manager config'
+ 
+ taxonomy_manager.subtree:
+   path: '/taxonomy_manager/subtree'

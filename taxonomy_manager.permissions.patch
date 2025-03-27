@@ -1,0 +1,12 @@
+diff --git a/taxonomy_manager.permissions.yml b/taxonomy_manager.permissions.yml
+index 7e796d6..8d579cb 100644
+--- a/taxonomy_manager.permissions.yml
++++ b/taxonomy_manager.permissions.yml
+@@ -1,3 +1,7 @@
+ access taxonomy manager list:
+   title: 'Access taxonomy manager list'
+   description: 'Access the taxonomy manager overview list page.'
++
++access taxonomy manager config:
++  title: 'Access taxonomy manager configuration'
++  description: 'Access the taxonomy manager configuration page.'
