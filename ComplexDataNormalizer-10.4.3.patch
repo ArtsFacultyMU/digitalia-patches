@@ -1,0 +1,18 @@
+diff --git a/modules/serialization/src/Normalizer/ComplexDataNormalizer.php b/modules/serialization/src/Normalizer/ComplexDataNormalizer.php
+index eaa098d2c4..b1300df428 100644
+--- a/modules/serialization/src/Normalizer/ComplexDataNormalizer.php
++++ b/modules/serialization/src/Normalizer/ComplexDataNormalizer.php
+@@ -31,6 +31,13 @@ class ComplexDataNormalizer extends NormalizerBase {
+       $object = !empty($object->getProperties(TRUE))
+         ? TypedDataInternalPropertiesHelper::getNonInternalProperties($object)
+         : $object->getValue();
++
++      // begin islandora-muni
++      // datafield workbench hack to not lose values in URL field type
++      if (!(is_object($object) || is_array($object))) {
++        $object = ["value" => $object];
++      }
++      // end islandora-muni
+     }
+     /** @var \Drupal\Core\TypedData\TypedDataInterface $property */
+     foreach ($object as $name => $property) {
