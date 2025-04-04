@@ -1,0 +1,25 @@
+diff --git a/islandora.module b/islandora.module
+index 153eb167..a522e9ef 100644
+--- a/islandora.module
++++ b/islandora.module
+@@ -276,7 +276,9 @@ function islandora_entity_view_mode_alter(&$view_mode, EntityInterface $entity)
+   $context_manager = \Drupal::service('context.manager');
+   $current_entity = \Drupal::routeMatch()->getParameter($entity_type);
+   $current_id = ($current_entity instanceof NodeInterface || $current_entity instanceof MediaInterface) ? $current_entity->id() : NULL;
+-  if (isset($current_id) && $current_id == $entity->id()) {
++  // begin islandora-muni
++  // don't crosscheck URL for node id
++  //if (isset($current_id) && $current_id == $entity->id()) {
+     foreach ($context_manager->getActiveReactions('\Drupal\islandora\Plugin\ContextReaction\ViewModeAlterReaction') as $reaction) {
+       // Construct the new view mode's machine name.
+       $entity_type = $entity->getEntityTypeId();
+@@ -296,7 +298,8 @@ function islandora_entity_view_mode_alter(&$view_mode, EntityInterface $entity)
+           ->info("EntityViewMode $machine_name does not exist.  View mode cannot be altered.");
+       }
+     }
+-  }
++  //}
++  // end islandora-muni
+ }
+ 
+ /**
