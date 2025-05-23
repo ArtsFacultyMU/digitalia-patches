@@ -1,0 +1,17 @@
+diff --git a/themes/claro/css/components/node.css b/themes/claro/css/components/node.css
+index 3b8565e916..a9b8a2cb90 100644
+--- a/themes/claro/css/components/node.css
++++ b/themes/claro/css/components/node.css
+@@ -7,3 +7,12 @@
+ .node__submitted {
+   margin: 1em 0;
+ }
++
++/* begin islandora-muni */
++/* IEF remove silly "Add" button, which does nothing useful */
++#inline-entity-form-field_coll_org-form input[data-drupal-selector="edit-field-coll-org-form-0-actions-ief-reference-save"],
++#inline-entity-form-field_personal_contact-form input[data-drupal-selector="edit-field-personal-contact-form-1-actions-ief-reference-save"]
++{
++  display: none;
++}
++/* end islandora-muni */

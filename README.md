@@ -14,6 +14,7 @@ If a specific patch needs to be modified after an update, create a new patch and
 | SqlContent.patch | drupal/core | Datafield error fix: save references in select list |
 | ComplexDataNormalizer.patch | drupal/core | Datafield/Workbench fix: normalize non-object fields properly |
 | Xss.patch | drupal/core | Allow `fieldset` and `legend` tags |
+| claro.node.patch | drupal/core | Remove superfluous `Add` button on A3D IEF for Organization and Person |
 | persistent_identifiers.patch | drupal/persistent_identifiers-persistent_identifiers | Create handle automatically on node save/creation |
 | MetaNameBase.patch | drupal/metatag | Make all field multiple |
 | gnode.links.action.patch | drupal/group | Allow adding entities to group from non-default views |
