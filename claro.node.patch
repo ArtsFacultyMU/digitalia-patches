@@ -1,8 +1,8 @@
 diff --git a/themes/claro/css/components/node.css b/themes/claro/css/components/node.css
-index 3b8565e916..a9b8a2cb90 100644
+index 3b8565e916..520327c0cd 100644
 --- a/themes/claro/css/components/node.css
 +++ b/themes/claro/css/components/node.css
-@@ -7,3 +7,12 @@
+@@ -7,3 +7,21 @@
  .node__submitted {
    margin: 1em 0;
  }
@@ -10,8 +10,17 @@ index 3b8565e916..a9b8a2cb90 100644
 +/* begin islandora-muni */
 +/* IEF remove silly "Add" button, which does nothing useful */
 +#inline-entity-form-field_coll_org-form input[data-drupal-selector="edit-field-coll-org-form-0-actions-ief-reference-save"],
-+#inline-entity-form-field_personal_contact-form input[data-drupal-selector="edit-field-personal-contact-form-1-actions-ief-reference-save"]
++#inline-entity-form-field_site-form input[data-drupal-selector="edit-field-site-form-0-actions-ief-reference-save"],
++#inline-entity-form-field_personal_contact-form input[value="Přidat  "]
 +{
 +  display: none;
 +}
++
++#inline-entity-form-field_coll_org-form .fieldset__wrapper .fieldset__wrapper,
++#inline-entity-form-field_personal_contact-form .fieldset__wrapper .fieldset__wrapper,
++#inline-entity-form-field_site-form .fieldset__wrapper .fieldset__wrapper
++{
++  display: flex;
++}
++
 +/* end islandora-muni */
