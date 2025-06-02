@@ -1,5 +1,5 @@
 diff --git a/modules/hdl/src/Minter/Hdl.php b/modules/hdl/src/Minter/Hdl.php
-index 184cc42..c9048ac 100644
+index 184cc42..2c021f6 100644
 --- a/modules/hdl/src/Minter/Hdl.php
 +++ b/modules/hdl/src/Minter/Hdl.php
 @@ -3,6 +3,7 @@
@@ -19,7 +19,7 @@ index 184cc42..c9048ac 100644
    public function mint($entity, $extra = NULL)
    {
      $config = \Drupal::config('hdl.settings');
-@@ -120,19 +123,48 @@ class Hdl implements MinterInterface
+@@ -120,19 +123,57 @@ class Hdl implements MinterInterface
      $admin_handle = $config->get('hdl_admin_handle');
      $handle_admin_index = $config->get('hdl_admin_index');
      $private_key_pem = $config->get('hdl_admin_private_key');
@@ -34,6 +34,15 @@ index 184cc42..c9048ac 100644
 +    $short_handle = $qualifier . '.' . $entity->id();
 +    $full_handle = $prefix . '/' . $short_handle;
 +    $host = \Drupal::request()->getSchemeAndHttpHost();
++
++    // don't mint new handle when present
++    $target_field = trim(\Drupal::config('persistent_identifiers.settings')->get('persistent_identifiers_target_field'));
++    if (method_exists($entity, 'hasField') && $entity->hasField($target_field)) {
++      if (!($entity->get($target_field)->isEmpty())) {
++        \Drupal::logger("DEBUG_HANDLE")->debug("Handle already minted.");
++        return FALSE;
++      }
++    }
 +
 +    if ($meta_qualifier != "") {
 +	    $meta_qualifier = "/" . $meta_qualifier;
@@ -72,7 +81,7 @@ index 184cc42..c9048ac 100644
        $response1 = $client->post($endpoint_url . "/api/sessions", [
          'headers' => [
            'Authorization' => 'Handle cnonce="' . $cnonce . '"',
-@@ -140,6 +172,7 @@ class Hdl implements MinterInterface
+@@ -140,6 +181,7 @@ class Hdl implements MinterInterface
            'Accept' => 'application/json'
          ],
        ]);
@@ -80,7 +89,7 @@ index 184cc42..c9048ac 100644
        $response1_body_array = json_decode($response1->getBody()->getContents(), TRUE);
  
        $sessionId = $response1_body_array["sessionId"];
-@@ -149,8 +182,8 @@ class Hdl implements MinterInterface
+@@ -149,8 +191,8 @@ class Hdl implements MinterInterface
        openssl_sign($data, $signature, $private_key_pem, OPENSSL_ALGO_SHA256);
        $signature = base64_encode($signature);
  
@@ -90,7 +99,7 @@ index 184cc42..c9048ac 100644
          'headers' => [
            'Authorization' => 'Handle sessionId="' . $sessionId . '",id="' . $handle_admin_index . ':' . $admin_handle . '",type="HS_PUBKEY",cnonce="' . $cnonce . '",alg="SHA256",signature="' . $signature . '"',
            'Content-Type' => 'application/json',
-@@ -159,19 +192,9 @@ class Hdl implements MinterInterface
+@@ -159,19 +201,9 @@ class Hdl implements MinterInterface
        ]);
        $response2_body_array = json_decode($response2->getBody()->getContents(), TRUE);
  
@@ -112,7 +121,7 @@ index 184cc42..c9048ac 100644
          'headers' => [
            'Authorization' => 'Handle sessionId="' . $sessionId . '"',
            'Content-Type' => 'application/json',
-@@ -179,9 +202,19 @@ class Hdl implements MinterInterface
+@@ -179,9 +211,19 @@ class Hdl implements MinterInterface
          ],
          'json' => $handle_json
        ]);
@@ -133,7 +142,7 @@ index 184cc42..c9048ac 100644
  
        //$this->messenger()->addStatus($this->t('New Handle Created - ') . $handle);
        //$form_state->setRedirect('<front>');
-@@ -197,6 +230,21 @@ class Hdl implements MinterInterface
+@@ -197,6 +239,21 @@ class Hdl implements MinterInterface
  
    }
  
