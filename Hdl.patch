@@ -1,5 +1,5 @@
 diff --git a/modules/hdl/src/Minter/Hdl.php b/modules/hdl/src/Minter/Hdl.php
-index 184cc42..2c021f6 100644
+index 184cc42..efcb0c3 100644
 --- a/modules/hdl/src/Minter/Hdl.php
 +++ b/modules/hdl/src/Minter/Hdl.php
 @@ -3,6 +3,7 @@
@@ -39,7 +39,7 @@ index 184cc42..2c021f6 100644
 +    $target_field = trim(\Drupal::config('persistent_identifiers.settings')->get('persistent_identifiers_target_field'));
 +    if (method_exists($entity, 'hasField') && $entity->hasField($target_field)) {
 +      if (!($entity->get($target_field)->isEmpty())) {
-+        \Drupal::logger("DEBUG_HANDLE")->debug("Handle already minted.");
++        \Drupal::logger("persistent identifiers")->notice("Handle already minted for node '{$entity->id()}'.");
 +        return FALSE;
 +      }
 +    }
