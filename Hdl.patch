@@ -1,5 +1,5 @@
 diff --git a/modules/hdl/src/Minter/Hdl.php b/modules/hdl/src/Minter/Hdl.php
-index 184cc42..efcb0c3 100644
+index 184cc42..0abc7db 100644
 --- a/modules/hdl/src/Minter/Hdl.php
 +++ b/modules/hdl/src/Minter/Hdl.php
 @@ -3,6 +3,7 @@
@@ -19,7 +19,7 @@ index 184cc42..efcb0c3 100644
    public function mint($entity, $extra = NULL)
    {
      $config = \Drupal::config('hdl.settings');
-@@ -120,19 +123,57 @@ class Hdl implements MinterInterface
+@@ -120,19 +123,60 @@ class Hdl implements MinterInterface
      $admin_handle = $config->get('hdl_admin_handle');
      $handle_admin_index = $config->get('hdl_admin_index');
      $private_key_pem = $config->get('hdl_admin_private_key');
@@ -31,18 +31,21 @@ index 184cc42..efcb0c3 100644
 +    //$url = $extra;
  
 -    \Drupal::logger("example")->debug("endpoint_url - $endpoint_url");
-+    $short_handle = $qualifier . '.' . $entity->id();
++    $timestamp = time();
++    $revision_id = $entity->getRevisionId();
++    \Drupal::logger("DEBUG")->debug(print_r($revision_id, TRUE));
++    $short_handle = "{$qualifier}.{$entity->id()}.{$timestamp}";
 +    $full_handle = $prefix . '/' . $short_handle;
 +    $host = \Drupal::request()->getSchemeAndHttpHost();
 +
-+    // don't mint new handle when present
-+    $target_field = trim(\Drupal::config('persistent_identifiers.settings')->get('persistent_identifiers_target_field'));
-+    if (method_exists($entity, 'hasField') && $entity->hasField($target_field)) {
-+      if (!($entity->get($target_field)->isEmpty())) {
-+        \Drupal::logger("persistent identifiers")->notice("Handle already minted for node '{$entity->id()}'.");
-+        return FALSE;
-+      }
-+    }
++    //// don't mint new handle when present
++    //$target_field = trim(\Drupal::config('persistent_identifiers.settings')->get('persistent_identifiers_target_field'));
++    //if (method_exists($entity, 'hasField') && $entity->hasField($target_field)) {
++    //  if (!($entity->get($target_field)->isEmpty())) {
++    //    \Drupal::logger("persistent identifiers")->notice("Handle already minted for node '{$entity->id()}'.");
++    //    return FALSE;
++    //  }
++    //}
 +
 +    if ($meta_qualifier != "") {
 +	    $meta_qualifier = "/" . $meta_qualifier;
@@ -81,7 +84,7 @@ index 184cc42..efcb0c3 100644
        $response1 = $client->post($endpoint_url . "/api/sessions", [
          'headers' => [
            'Authorization' => 'Handle cnonce="' . $cnonce . '"',
-@@ -140,6 +181,7 @@ class Hdl implements MinterInterface
+@@ -140,6 +184,7 @@ class Hdl implements MinterInterface
            'Accept' => 'application/json'
          ],
        ]);
@@ -89,7 +92,7 @@ index 184cc42..efcb0c3 100644
        $response1_body_array = json_decode($response1->getBody()->getContents(), TRUE);
  
        $sessionId = $response1_body_array["sessionId"];
-@@ -149,8 +191,8 @@ class Hdl implements MinterInterface
+@@ -149,8 +194,8 @@ class Hdl implements MinterInterface
        openssl_sign($data, $signature, $private_key_pem, OPENSSL_ALGO_SHA256);
        $signature = base64_encode($signature);
  
@@ -99,7 +102,7 @@ index 184cc42..efcb0c3 100644
          'headers' => [
            'Authorization' => 'Handle sessionId="' . $sessionId . '",id="' . $handle_admin_index . ':' . $admin_handle . '",type="HS_PUBKEY",cnonce="' . $cnonce . '",alg="SHA256",signature="' . $signature . '"',
            'Content-Type' => 'application/json',
-@@ -159,19 +201,9 @@ class Hdl implements MinterInterface
+@@ -159,19 +204,9 @@ class Hdl implements MinterInterface
        ]);
        $response2_body_array = json_decode($response2->getBody()->getContents(), TRUE);
  
@@ -121,7 +124,7 @@ index 184cc42..efcb0c3 100644
          'headers' => [
            'Authorization' => 'Handle sessionId="' . $sessionId . '"',
            'Content-Type' => 'application/json',
-@@ -179,9 +211,19 @@ class Hdl implements MinterInterface
+@@ -179,9 +214,38 @@ class Hdl implements MinterInterface
          ],
          'json' => $handle_json
        ]);
@@ -129,7 +132,6 @@ index 184cc42..efcb0c3 100644
        $response3_body_array = json_decode($response3->getBody()->getContents(), TRUE);
  
 -      return $response3_body_array["handle"];
-+      $this->deleteSession($client, $sessionId, $endpoint_url);
 +
 +      //return $response3_body_array["handle"];
 +      //\Drupal::logger('persistent identifiers')->debug(print_r($response3_body_array, TRUE));
@@ -138,11 +140,31 @@ index 184cc42..efcb0c3 100644
 +        return FALSE;
 +      }
 +
++
++      // modify old handle
++      $target_field = trim(\Drupal::config('persistent_identifiers.settings')->get('persistent_identifiers_target_field'));
++      $old_short_handle = $entity->get($target_field)->getValue()[0]['value'];
++      $old_handle_json = $handle_json;
++      $old_handle_json[0]['data']['value'] = "{$url}/revisions/{$revision_id}/view";
++
++      // set old handle to revision url
++      $response4 = $client->PUT($endpoint_url . "/api/handles/" . $prefix . "/" . $old_short_handle . "?overwrite=true&mintNewSuffix=false", [
++        'headers' => [
++          'Authorization' => 'Handle sessionId="' . $sessionId . '"',
++          'Content-Type' => 'application/json',
++          'Accept' => 'application/json'
++        ],
++        'json' => $old_handle_json
++      ]);
++
++      $this->deleteSession($client, $sessionId, $endpoint_url);
++
++
 +      return $short_handle;
  
        //$this->messenger()->addStatus($this->t('New Handle Created - ') . $handle);
        //$form_state->setRedirect('<front>');
-@@ -197,6 +239,21 @@ class Hdl implements MinterInterface
+@@ -197,6 +261,21 @@ class Hdl implements MinterInterface
  
    }
  
