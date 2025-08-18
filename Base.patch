@@ -1,0 +1,17 @@
+diff --git a/src/Plugin/Field/FieldWidget/Base.php b/src/Plugin/Field/FieldWidget/Base.php
+index cad0c89..a6b6281 100644
+--- a/src/Plugin/Field/FieldWidget/Base.php
++++ b/src/Plugin/Field/FieldWidget/Base.php
+@@ -255,6 +255,12 @@ abstract class Base extends WidgetBase {
+     $path = array_merge($form['#parents'], [$fieldName]);
+     $key_exists = NULL;
+     $userInputs = NestedArray::getValue($form_state->getUserInput(), $path, $key_exists);
++    // islandora-muni
++    // if userInputs is null (user doesn't have access to field) return unmodified values
++    if (!$userInputs) {
++      return array_values($values);
++    }
++    //
+     if (count($userInputs) != count($values)) {
+       $values = $userInputs;
+     }
