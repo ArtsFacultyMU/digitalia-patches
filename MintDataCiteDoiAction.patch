@@ -1,0 +1,13 @@
+diff --git a/modules/doi_datacite/src/Plugin/Action/MintDataCiteDoiAction.php b/modules/doi_datacite/src/Plugin/Action/MintDataCiteDoiAction.php
+index d93faeb..e42713c 100644
+--- a/modules/doi_datacite/src/Plugin/Action/MintDataCiteDoiAction.php
++++ b/modules/doi_datacite/src/Plugin/Action/MintDataCiteDoiAction.php
+@@ -14,7 +14,7 @@ use Drupal\Core\Session\AccountInterface;
+  * @Action(
+  *   id = "doi_datacite_mint_doi",
+  *   label = @Translation("Mint DataCite DOIs"),
+- *   type = "",
++ *   type = "node",
+  *   confirm = TRUE,
+  * )
+  */

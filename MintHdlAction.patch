@@ -1,0 +1,13 @@
+diff --git a/modules/hdl/src/Plugin/Action/MintHdlAction.php b/modules/hdl/src/Plugin/Action/MintHdlAction.php
+index 0014c86..2093f20 100644
+--- a/modules/hdl/src/Plugin/Action/MintHdlAction.php
++++ b/modules/hdl/src/Plugin/Action/MintHdlAction.php
+@@ -14,7 +14,7 @@ use Drupal\Core\Session\AccountInterface;
+  * @Action(
+  *   id = "hdl_mint_handle",
+  *   label = @Translation("Create Handle"),
+- *   type = "",
++ *   type = "node",
+  *   confirm = TRUE,
+  * )
+  */
