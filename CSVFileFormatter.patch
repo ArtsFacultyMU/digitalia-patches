@@ -1,0 +1,47 @@
+diff --git a/src/Plugin/Field/FieldFormatter/CSVFileFormatter.php b/src/Plugin/Field/FieldFormatter/CSVFileFormatter.php
+index 2d4c04a..efd959a 100644
+--- a/src/Plugin/Field/FieldFormatter/CSVFileFormatter.php
++++ b/src/Plugin/Field/FieldFormatter/CSVFileFormatter.php
+@@ -383,8 +383,11 @@ class CSVFileFormatter extends FileFormatterBase {
+   private function readCsv($filename, $fieldname, $entity_id, $description = '') {
+     $render_array = [];
+ 
++
+     $settings = $this->getSettings();
+ 
++
++
+     $header = $settings['csvfile_formatter_has_header'];
+     $separator = empty($settings['csvfile_formatter_separator']) ? ',' : $settings['csvfile_formatter_separator'];
+     // Handle tab-separated files using \t as a separator in formatter config.
+@@ -398,6 +401,30 @@ class CSVFileFormatter extends FileFormatterBase {
+       $row_classes = implode(' ', explode(' ', $settings['csvfile_formatter_row_class']));
+     }
+ 
++    // begin islandora-muni
++    $entity = \Drupal\media\Entity\Media::load($entity_id);
++    $entity_bundle = $entity->get('bundle')->getValue()[0]['target_id'];
++    $config = $this->getConfigFactory()->get('csvfile_formatter.settings')->get('dataTableSettings');
++
++    if ($entity_bundle == $config['bundle']) {
++      $media_separator = $entity->get('field_separator')->getValue()[0]['value'];
++      $media_enclosure = $entity->get('field_enclosure')->getValue()[0]['value'];
++      $media_header = (bool) $entity->get('field_has_header')->getValue()[0]['value'];
++
++      if (!empty($media_separator)) {
++        $separator = $media_separator;
++      }
++
++      if (!empty($media_enclosure)) {
++        $enclosure = $media_enclosure;
++      }
++
++      if (!empty($media_header)) {
++        $header = $media_header;
++      }
++    }
++    // end islandora-muni
++
+     $table_data = [];
+     $table_data['header'] = [];
+     $table_data['rows'] = [];

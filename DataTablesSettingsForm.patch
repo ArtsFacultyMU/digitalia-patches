@@ -1,0 +1,33 @@
+diff --git a/src/Form/DataTablesSettingsForm.php b/src/Form/DataTablesSettingsForm.php
+index 67774d3..cce8cf7 100644
+--- a/src/Form/DataTablesSettingsForm.php
++++ b/src/Form/DataTablesSettingsForm.php
+@@ -42,6 +42,7 @@ class DataTablesSettingsForm extends ConfigFormBase {
+       'stateSave' => FALSE,
+       'scrollX' => -1,
+       'scrollY' => -1,
++      'bundle' => 'csv',
+     ];
+     return $result;
+   }
+@@ -134,6 +135,12 @@ class DataTablesSettingsForm extends ConfigFormBase {
+       '#description' => $this->t('Constrain to given height before scrolling. Set to -1 to disable vertical scrolling.'),
+       '#default_value' => $settings['scrollY'],
+     ];
++    $form['dataTable']['bundle'] = [
++      '#type' => 'textfield',
++      '#title' => $this->t('Bundle'),
++      '#description' => $this->t('Media bundle for dynamic csv parameters based on fields (separator, enclosure, ...).'),
++      '#default_value' => $settings['bundle'],
++    ];
+ 
+     return parent::buildForm($form, $form_state);
+   }
+@@ -156,6 +163,7 @@ class DataTablesSettingsForm extends ConfigFormBase {
+         'stateSave' => $form_state->getValue('stateSave'),
+         'scrollX' => $form_state->getValue('scrollX'),
+         'scrollY' => $form_state->getValue('scrollY'),
++        'bundle' => $form_state->getValue('bundle'),
+         'pageLength' => (int) $form_state->getValue('pageLength'),
+       ])->save();
+ 
