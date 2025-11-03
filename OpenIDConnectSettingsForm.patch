@@ -1,0 +1,13 @@
+diff --git a/src/Form/OpenIDConnectSettingsForm.php b/src/Form/OpenIDConnectSettingsForm.php
+index 3813241..14d64cc 100644
+--- a/src/Form/OpenIDConnectSettingsForm.php
++++ b/src/Form/OpenIDConnectSettingsForm.php
+@@ -215,7 +215,7 @@ class OpenIDConnectSettingsForm extends ConfigFormBase {
+ 
+       $form['role_mappings'][$role_id] = [
+         '#title' => $role->label(),
+-        '#type' => 'textfield',
++        '#type' => 'textarea',
+         '#default_value' => $default,
+       ];
+     }

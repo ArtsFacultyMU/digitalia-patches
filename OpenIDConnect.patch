@@ -1,0 +1,15 @@
+diff --git a/src/OpenIDConnect.php b/src/OpenIDConnect.php
+index f80c4a9..14f2d8c 100644
+--- a/src/OpenIDConnect.php
++++ b/src/OpenIDConnect.php
+@@ -712,7 +712,9 @@ class OpenIDConnect {
+ 
+     // Map groups to Drupal roles.
+     $role_mappings = $this->configFactory->get('openid_connect.settings')->get('role_mappings') ?? [];
+-    $user_groups = $userinfo['groups'] ?? [];
++    //$user_groups = $userinfo['groups'] ?? [];
++    $user_groups = $userinfo['eduperson_entitlement'] ?? [];
++
+     foreach ($role_mappings as $role => $mappings) {
+       if (empty(array_intersect($mappings, $user_groups))) {
+         // User doesn't have a mapped role. Remove it from their account.
