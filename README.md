@@ -23,3 +23,6 @@ If a specific patch needs to be modified after an update, create a new patch and
 | hdl.module.patch | drupal/persistent_identifiers-persistent_identifiers | Reenable qualifier field in configuration |
 | HideWhenNoFilters.patch | drupal/facets | Add processor HideWhenNoFilters to hide empty facet summary |
 | FacetsFilter.patch | drupal/facets | Show empty facets |
+| OpenIDConnect.patch | drupal/openid_connect | OpenID: make user group role mapping functional |
+| OpenIDConnectSettingsForm.patch | drupal/openid_connect | OpenID: change textarea field type |
+
