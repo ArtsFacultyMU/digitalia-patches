@@ -1,0 +1,31 @@
+diff --git a/src/Hook/TokenTokensHooks.php b/src/Hook/TokenTokensHooks.php
+index f9cec55..d143df6 100644
+--- a/src/Hook/TokenTokensHooks.php
++++ b/src/Hook/TokenTokensHooks.php
+@@ -1054,6 +1054,11 @@ final class TokenTokensHooks {
+       // Obtain the entity with the correct language.
+       $entity = $this->entityRepository->getTranslationFromContext($entity, $langcode);
+ 
++      // begin islandora-muni
++      $moduleHandler = \Drupal::service('module_handler');
++      $digitalia_formatters_enabled = $moduleHandler->moduleExists('digitalia_muni_formatters');
++      // end islandora-muni
++
+       foreach ($tokens as $name => $original) {
+         // For the [entity:field_name] token.
+         if (strpos($name, ':') === FALSE) {
+@@ -1099,6 +1104,14 @@ final class TokenTokensHooks {
+             ];
+           }
+ 
++          // begin islandora-muni
++          // Only multivalue fields are of concern
++          // Implementation of alter_field_token_rendering is in digitalia_muni_formatters
++          if ($digitalia_formatters_enabled && $entity->get($field_name)->getDataDefinition()->isList()) {
++            alter_field_token_rendering($display_options);
++          }
++          // end islandora-muni
++
+           // Render only one delta.
+           if (isset($delta)) {
+             if ($field_delta = $entity->{$field_name}[$delta]) {
