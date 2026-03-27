@@ -1,31 +1,13 @@
 diff --git a/modules/doi_datacite/src/Plugin/Action/MintDataCiteDoiAction.php b/modules/doi_datacite/src/Plugin/Action/MintDataCiteDoiAction.php
-index d93faeb..3cb20df 100644
+index d93faeb..e42713c 100644
 --- a/modules/doi_datacite/src/Plugin/Action/MintDataCiteDoiAction.php
 +++ b/modules/doi_datacite/src/Plugin/Action/MintDataCiteDoiAction.php
-@@ -41,7 +41,7 @@ class MintDataCiteDoiAction extends ViewsBulkOperationsActionBase implements Vie
-   /**
-    * {@inheritdoc}
-    */
--  public function buildPreConfigurationForm(array $form, array $values, FormStateInterface $form_state) {
-+  public function buildPreConfigurationForm(array $form, array $values, FormStateInterface $form_state): array {
-     return $form;
-   }
- 
-@@ -56,7 +56,7 @@ class MintDataCiteDoiAction extends ViewsBulkOperationsActionBase implements Vie
-    * @return array
-    *   The configuration form.
-    */
--  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
-     $minter = \Drupal::service('doi_datacite.minter.datacitedois');
-     $resource_type_values = $minter->getResourceTypes();
-     $form['doi_datacite_resource_type'] = [
-@@ -96,7 +96,7 @@ class MintDataCiteDoiAction extends ViewsBulkOperationsActionBase implements Vie
-    * @param Drupal\Core\Form\FormStateInterface $form_state
-    *   The form state object.
-    */
--  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
-+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
-     $this->configuration['doi_datacite_creator'] = $form_state->getValue('doi_datacite_creator');
-     $this->configuration['doi_datacite_publication_year'] = $form_state->getValue('doi_datacite_publication_year');
-     $this->configuration['doi_datacite_publisher'] = $form_state->getValue('doi_datacite_publisher');
+@@ -14,7 +14,7 @@ use Drupal\Core\Session\AccountInterface;
+  * @Action(
+  *   id = "doi_datacite_mint_doi",
+  *   label = @Translation("Mint DataCite DOIs"),
+- *   type = "",
++ *   type = "node",
+  *   confirm = TRUE,
+  * )
+  */

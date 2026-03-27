@@ -25,5 +25,5 @@ If a specific patch needs to be modified after an update, create a new patch and
 | FacetsFilter.patch | drupal/facets | Show empty facets |
 | OpenIDConnect.patch | drupal/openid_connect | OpenID: make user group role mapping functional |
 | OpenIDConnectSettingsForm.patch | drupal/openid_connect | OpenID: change textarea field type |
-| MintDataCiteDoiAction.patch | drupal/persistent_identifiers-persistent_identifiers | Fix compatibility with Views Bulk Operations|
+| MintDataCiteDoiAction_vbo.patch | drupal/persistent_identifiers-persistent_identifiers | Fix compatibility with Views Bulk Operations|
 
