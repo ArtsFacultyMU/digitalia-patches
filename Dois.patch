@@ -1,0 +1,146 @@
+diff --git a/modules/doi_datacite/src/Minter/Dois.php b/modules/doi_datacite/src/Minter/Dois.php
+index 5b04803..730efc1 100644
+--- a/modules/doi_datacite/src/Minter/Dois.php
++++ b/modules/doi_datacite/src/Minter/Dois.php
+@@ -17,6 +17,7 @@ class Dois implements MinterInterface {
+    */
+   public function __construct() {
+     $config = \Drupal::config('doi_datacite.settings');
++    $this->global_config = \Drupal::config('persistent_identifiers.settings');
+     $this->api_endpoint = $config->get('doi_datacite_api_endpoint');
+     $this->doi_prefix = $config->get('doi_datacite_prefix');
+     $this->doi_suffix_source = $config->get('doi_datacite_suffix_source');
+@@ -157,6 +158,15 @@ class Dois implements MinterInterface {
+     // Define a hook so people can write modules to alter the JSON.
+     \Drupal::moduleHandler()->invokeAll('doi_datacite_json_alter', [$entity, $extra, &$datacite_json]);
+ 
++    $current_doi = $entity->get($this->global_config->get("persistent_identifiers_target_field"))->getValue();
++    // a bit of a hack; appending the same value will cause no harm, especially when a field
++    // is not repeatable
++    if (!empty($current_doi)) {
++	    $current_doi_value = $current_doi[0]["value"];
++	    $this->postToApiUpdate($current_doi_value, $datacite_json);
++	    return $current_doi_value;
++    }
++
+     $minted_doi = $this->postToApi($entity->id(), $datacite_json);
+     return $minted_doi;
+   }
+@@ -428,6 +438,62 @@ class Dois implements MinterInterface {
+     return NULL;
+   }
+ 
++  /**
++   * Mostly copy paste from postToApi()
++   * PUTs to DataCite REST API to update the DOI.
++   *
++   * @param string $doi
++   *   Existing doi.
++   * @param string $datacite_json
++   *   The DataCite JSON. See https://support.datacite.org/docs/api-create-dois
++   *   for more information.
++   */
++  public function postToApiUpdate($doi, $datacite_json) {
++    $response = \Drupal::httpClient()->put("{$this->api_endpoint}/{$doi}", [
++        'auth' => [$this->api_username, $this->api_password],
++        'body' => $datacite_json,
++        'http_errors' => FALSE,
++        'headers' => [
++           'Content-Type' => 'application/vnd.api+json',
++        ],
++    ]);
++
++    $http_code = $response->getStatusCode();
++    if ($http_code == 200) {
++        \Drupal::logger('doi_datacite')->notice(t("Node with doi {$doi} successfully updated."));
++      return;
++    }
++    else {
++      switch ($http_code) {
++        case 404:
++          $hint = ' Hint: Check your repository ID, DOI prefix, and/or password.';
++          break;
++        case 400:
++          $hint = ' Hint: The JSON being sent to DataCite may be invalid (' . $datacite_json . ').';
++          break;
++        case 422:
++          $hint = '';
++          break;
++        default:
++          $hint = '';
++      }
++      if (!emtpy($doi))
++        \Drupal::logger('doi_datacite')->warning(t("While minting DOI @doi, the DataCite API returned @code status with the message '@message' @hint", [
++          '@doi' => $doi,
++          '@code' => $http_code,
++          '@message' => $response->getBody()->getContents(),
++          '@hint' => $hint,
++        ]));
++      else
++        \Drupal::logger('doi_datacite')->warning(t("While minting DOI, the DataCite API returned @code status with the message '@message' @hint , @datacitejson", [
++          '@code' => $http_code,
++          '@message' => $response->getBody()->getContents(),
++          '@hint' => $hint,
++          '@datacitejson' => $datacite_json
++        ]));
++    }
++  }
++
+ 
+   /**
+    * Attempts to prepopulate DataCite-specific metadata fields.
+@@ -453,30 +519,30 @@ class Dois implements MinterInterface {
+     }
+ 
+     $node = \Drupal::entityTypeManager()->getStorage('node')->load($nid);
+-    // Creators.
+-    $creators_field_name = $config->get('doi_datacite_creators_mapping');
+-    if ($node->hasField($creators_field_name)) {
+-      $node_creators_field_values = $node->get($creators_field_name)->getValue();
+-      if (array_key_exists('value', $node_creators_field_values[0])) {
+-        $datacite_values['creators'] = $node_creators_field_values[0]['value'];
+-      }
+-    }
+-    // Publisher.
+-    $publisher_field_name = $config->get('doi_datacite_publisher_mapping');
+-    if ($node->hasField($publisher_field_name)) {
+-      $node_publisher_field_values = $node->get($publisher_field_name)->getValue();
+-      if (array_key_exists('value', $node_publisher_field_values[0])) {
+-        $datacite_values['publisher'] = $node_publisher_field_values[0]['value'];
+-      }
+-    }
+-    // Publication year.
+-    $publication_year_field_name = $config->get('doi_datacite_publicationyear_mapping');
+-    if ($node->hasField($publication_year_field_name)) {
+-      $node_publication_year_field_values = $node->get($publication_year_field_name)->getValue();
+-      if (array_key_exists('value', $node_publication_year_field_values[0])) {
+-        $datacite_values['publicationYear'] = $node_publication_year_field_values[0]['value'];
+-      }
+-    }
++    //// Creators.
++    //$creators_field_name = $config->get('doi_datacite_creators_mapping');
++    //if ($node->hasField($creators_field_name)) {
++    //  $node_creators_field_values = $node->get($creators_field_name)->getValue();
++    //  if (array_key_exists('value', $node_creators_field_values[0])) {
++    //    $datacite_values['creators'] = $node_creators_field_values[0]['value'];
++    //  }
++    //}
++    //// Publisher.
++    //$publisher_field_name = $config->get('doi_datacite_publisher_mapping');
++    //if ($node->hasField($publisher_field_name)) {
++    //  $node_publisher_field_values = $node->get($publisher_field_name)->getValue();
++    //  if (array_key_exists('value', $node_publisher_field_values[0])) {
++    //    $datacite_values['publisher'] = $node_publisher_field_values[0]['value'];
++    //  }
++    //}
++    //// Publication year.
++    //$publication_year_field_name = $config->get('doi_datacite_publicationyear_mapping');
++    //if ($node->hasField($publication_year_field_name)) {
++    //  $node_publication_year_field_values = $node->get($publication_year_field_name)->getValue();
++    //  if (array_key_exists('value', $node_publication_year_field_values[0])) {
++    //    $datacite_values['publicationYear'] = $node_publication_year_field_values[0]['value'];
++    //  }
++    //}
+ 
+     return $datacite_values;
+   }

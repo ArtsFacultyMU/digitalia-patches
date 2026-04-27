@@ -26,4 +26,5 @@ If a specific patch needs to be modified after an update, create a new patch and
 | OpenIDConnect.patch | drupal/openid_connect | OpenID: make user group role mapping functional |
 | OpenIDConnectSettingsForm.patch | drupal/openid_connect | OpenID: change textarea field type |
 | MintDataCiteDoiAction_vbo.patch | drupal/persistent_identifiers-persistent_identifiers | Fix compatibility with Views Bulk Operations|
+| Dois.patch | drupal/persistent_identifiers-persistent_identifiers | Allow for DOI updates, pair with digitalia_muni_dataset_doi |
 
