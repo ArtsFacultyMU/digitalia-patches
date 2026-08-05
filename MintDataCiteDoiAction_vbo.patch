@@ -2,15 +2,6 @@ diff --git a/modules/doi_datacite/src/Plugin/Action/MintDataCiteDoiAction.php b/
 index d93faeb..3cb20df 100644
 --- a/modules/doi_datacite/src/Plugin/Action/MintDataCiteDoiAction.php
 +++ b/modules/doi_datacite/src/Plugin/Action/MintDataCiteDoiAction.php
-@@ -41,7 +41,7 @@ class MintDataCiteDoiAction extends ViewsBulkOperationsActionBase implements Vie
-   /**
-    * {@inheritdoc}
-    */
--  public function buildPreConfigurationForm(array $form, array $values, FormStateInterface $form_state) {
-+  public function buildPreConfigurationForm(array $form, array $values, FormStateInterface $form_state): array {
-     return $form;
-   }
- 
 @@ -56,7 +56,7 @@ class MintDataCiteDoiAction extends ViewsBulkOperationsActionBase implements Vie
     * @return array
     *   The configuration form.
