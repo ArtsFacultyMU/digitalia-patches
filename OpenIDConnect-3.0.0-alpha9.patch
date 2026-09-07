@@ -1,0 +1,14 @@
+diff --git a/src/OpenIDConnect.php b/src/OpenIDConnect.php
+index aa20d87..1f72772 100644
+--- a/src/OpenIDConnect.php
++++ b/src/OpenIDConnect.php
+@@ -787,7 +787,8 @@ class OpenIDConnect {
+     // Map groups to Drupal roles.
+     $settings = $this->configFactory->get('openid_connect.settings');
+     $role_mappings = $settings->get('role_mappings') ?? [];
+-    $user_groups = $userinfo['groups'] ?? [];
++    //$user_groups = $userinfo['groups'] ?? [];
++    $user_groups = $userinfo['eduperson_entitlement'] ?? [];
+ 
+     // Ensure that both role mappings and user groups are available
+     // before altering user roles.
