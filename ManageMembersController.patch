@@ -1,0 +1,17 @@
+diff --git a/src/Controller/ManageMembersController.php b/src/Controller/ManageMembersController.php
+index 44b517e3..c5cf2cd0 100644
+--- a/src/Controller/ManageMembersController.php
++++ b/src/Controller/ManageMembersController.php
+@@ -74,7 +74,11 @@ class ManageMembersController extends EntityController {
+       'node.add',
+       'node.type_add',
+       $field,
+-      ['query' => ["edit[$field][widget][0][target_id]" => $node->id()]]
++      ['query' => [
++          "edit[$field][widget][0][target_id]" => $node->id(),
++          "edit[field_dm_group][widget]" => $node->get("field_dm_group")->getValue()[0]["target_id"]
++        ]
++      ]
+     );
+ 
+     $manage_link['#url'] = Url::fromRoute('entity.node_type.collection');

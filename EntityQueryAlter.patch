@@ -1,0 +1,183 @@
+diff --git a/src/QueryAccess/EntityQueryAlter.php b/src/QueryAccess/EntityQueryAlter.php
+index 7ca0203..dbdabb4 100644
+--- a/src/QueryAccess/EntityQueryAlter.php
++++ b/src/QueryAccess/EntityQueryAlter.php
+@@ -127,6 +127,21 @@ class EntityQueryAlter extends PluginBasedQueryAlterBase {
+     $published_key = $this->entityType->getKey('published');
+ 
+     $allowed_any_ids = $allowed_own_ids = $allowed_any_by_status_ids = $allowed_own_by_status_ids = [];
++    $allowed_any_embargoed_access_by_status_ids = $allowed_any_metadata_only_access_by_status_ids = $allowed_any_open_access_by_status_ids = $allowed_any_restricted_access_by_status_ids = [];
++
++    $published_embargoed_access_permission = "view any published embargoed_access";
++    $published_metadata_only_access_permission = "view any published metadata_only_access";
++    $published_open_access_permission = "view any published open_access";
++    $published_restricted_access_permission = "view any published restricted_access";
++
++    $unpublished_embargoed_access_permission = "view any unpublished embargoed_access";
++    $unpublished_metadata_only_access_permission = "view any unpublished metadata_only_access";
++    $unpublished_open_access_permission = "view any unpublished open_access";
++    $unpublished_restricted_access_permission = "view any unpublished restricted_access";
++
++    $is_node = $id_key === "nid";
++    $is_media = $id_key === "mid";
++
+     foreach ($plugin_ids_in_use as $plugin_id) {
+       $handler = $this->pluginManager->getPermissionProvider($plugin_id);
+       $admin_permission = $handler->getAdminPermission();
+@@ -136,8 +151,33 @@ class EntityQueryAlter extends PluginBasedQueryAlterBase {
+         $any_unpublished_permission = $handler->getPermission("$operation unpublished", 'entity', 'any');
+         $own_unpublished_permission = $handler->getPermission("$operation unpublished", 'entity', 'own');
+       }
+-
+       foreach ($calculated_permissions->getItems() as $item) {
++        if ($item->hasPermission($published_embargoed_access_permission)) {
++          $allowed_any_embargoed_access_by_status_ids[1][$item->getScope()][$plugin_id][] = $item->getIdentifier();
++        }
++        if ($item->hasPermission($published_metadata_only_access_permission)) {
++          $allowed_any_metadata_only_access_by_status_ids[1][$item->getScope()][$plugin_id][] = $item->getIdentifier();
++        }
++        if ($item->hasPermission($published_open_access_permission)) {
++          $allowed_any_open_access_by_status_ids[1][$item->getScope()][$plugin_id][] = $item->getIdentifier();
++        }
++        if ($item->hasPermission($published_restricted_access_permission)) {
++          $allowed_any_restricted_access_by_status_ids[1][$item->getScope()][$plugin_id][] = $item->getIdentifier();
++        }
++
++        if ($item->hasPermission($unpublished_embargoed_access_permission)) {
++          $allowed_any_embargoed_access_by_status_ids[0][$item->getScope()][$plugin_id][] = $item->getIdentifier();
++        }
++        if ($item->hasPermission($unpublished_metadata_only_access_permission)) {
++          $allowed_any_metadata_only_access_by_status_ids[0][$item->getScope()][$plugin_id][] = $item->getIdentifier();
++        }
++        if ($item->hasPermission($unpublished_open_access_permission)) {
++          $allowed_any_open_access_by_status_ids[0][$item->getScope()][$plugin_id][] = $item->getIdentifier();
++        }
++        if ($item->hasPermission($unpublished_restricted_access_permission)) {
++          $allowed_any_restricted_access_by_status_ids[0][$item->getScope()][$plugin_id][] = $item->getIdentifier();
++        }
++
+         if ($admin_permission !== FALSE && $item->hasPermission($admin_permission)) {
+           $allowed_any_ids[$item->getScope()][$plugin_id][] = $item->getIdentifier();
+         }
+@@ -169,6 +209,10 @@ class EntityQueryAlter extends PluginBasedQueryAlterBase {
+     $has_regular_ids = !empty($allowed_any_ids);
+     $has_own_ids = !empty($allowed_own_ids);
+     $has_status_ids = FALSE;
++    $has_any_embargoed_access_by_status_ids = !empty($allowed_any_embargoed_access_by_status_ids);
++    $has_any_metadata_only_access_by_status_ids = !empty($allowed_any_metadata_only_access_by_status_ids);
++    $has_any_open_access_by_status_ids = !empty($allowed_any_open_access_by_status_ids);
++    $has_any_restricted_access_by_status_ids = !empty($allowed_any_restricted_access_by_status_ids);
+ 
+     $statuses_to_check = [];
+     foreach ([0, 1] as $status) {
+@@ -179,7 +223,7 @@ class EntityQueryAlter extends PluginBasedQueryAlterBase {
+     }
+ 
+     // If no group type or group gave access, we deny access altogether.
+-    if (!$has_regular_ids && !$has_own_ids && !$has_status_ids) {
++    if (!$has_regular_ids && !$has_own_ids && !$has_status_ids && !$has_any_embargoed_access_by_status_ids && !$has_any_metadata_only_access_by_status_ids && !$has_any_open_access_by_status_ids && !$has_any_restricted_access_by_status_ids) {
+       $this->query->isNull("$this->joinAliasPlugins.entity_id");
+       return;
+     }
+@@ -194,7 +238,7 @@ class EntityQueryAlter extends PluginBasedQueryAlterBase {
+ 
+     // If we're going to need a data table anyhow, might as well initialize it
+     // early so all checks are added to the same table.
+-    if ($has_own_ids || $has_status_ids) {
++    if ($has_own_ids || $has_status_ids || $has_status_ids || $has_any_embargoed_access_by_status_ids || $has_any_metadata_only_access_by_status_ids || $has_any_open_access_by_status_ids || $has_any_restricted_access_by_status_ids) {
+       $data_table = $this->ensureDataTable();
+     }
+ 
+@@ -202,6 +246,92 @@ class EntityQueryAlter extends PluginBasedQueryAlterBase {
+       $this->addScopedConditions($allowed_any_ids, $group_conditions);
+     }
+ 
++    $access_rights_field_table = "node__field_access_rights";
++    $embargo_date_field_table = "node__field_embargo_end_date";
++    $media_of_field_table = "media__field_media_of";
++
++    $embargo;
++    $media_of;
++    $access_rights;
++    $dm_statuses = [0, 1];
++
++    // use of %alias mostly as a precaution, only necessary instance is with media_of table
++    if ($is_node) {
++      $embargo = $this->query->leftJoin($embargo_date_field_table, $embargo_date_field_table, "$data_table.$id_key=%alias.entity_id");
++      $access_rights = $this->query->leftJoin($access_rights_field_table, $access_rights_field_table, "$data_table.$id_key=%alias.entity_id");
++    }
++
++    if ($is_media) {
++      $media_of = $this->query->leftJoin($media_of_field_table, $media_of_field_table, "$data_table.$id_key=%alias.entity_id");
++      $embargo = $this->query->leftJoin($embargo_date_field_table, $embargo_date_field_table, "$media_of.field_media_of_target_id=%alias.entity_id");
++      $access_rights = $this->query->leftJoin($access_rights_field_table, $access_rights_field_table, "$media_of.field_media_of_target_id=%alias.entity_id");
++    }
++
++    // Open access
++    if ($has_any_open_access_by_status_ids && !empty($access_rights)) {
++      foreach ($dm_statuses as $status) {
++        if (!empty($allowed_any_open_access_by_status_ids[$status])) {
++          $group_conditions->condition($status_conditions = $this->query->andConditionGroup());
++          $status_conditions->condition("$data_table.$published_key", $status);
++          $status_conditions->condition("$access_rights.field_access_rights_value", "open_access");
++          $this->addScopedConditions($allowed_any_open_access_by_status_ids[$status], $status_conditions);
++        }
++      }
++    }
++
++    // Restricted access
++    if ($has_any_restricted_access_by_status_ids && !empty($access_rights)) {
++      foreach ($dm_statuses as $status) {
++        if (!empty($allowed_any_restricted_access_by_status_ids[$status])) {
++          $group_conditions->condition($status_conditions = $this->query->andConditionGroup());
++          $status_conditions->condition("$data_table.$published_key", $status);
++          $status_conditions->condition("$access_rights.field_access_rights_value", "restricted_access");
++          $this->addScopedConditions($allowed_any_restricted_access_by_status_ids[$status], $status_conditions);
++        }
++      }
++    }
++
++    // Embargoed access
++    if ($has_any_embargoed_access_by_status_ids && !empty($access_rights)) {
++      if (!empty($allowed_any_embargoed_access_by_status_ids[0])) {
++        $group_conditions->condition($status_conditions = $this->query->andConditionGroup());
++        $status_conditions->condition("$access_rights.field_access_rights_value", "embargoed_access");
++        $this->addScopedConditions($allowed_any_embargoed_access_by_status_ids[0], $status_conditions);
++        $this->addScopedConditions($allowed_any_embargoed_access_by_status_ids[1], $status_conditions);
++      }
++
++      // only check on users which can't access unpublished embargoed items
++      if (empty($allowed_any_embargoed_access_by_status_ids[0]) && !empty($allowed_any_embargoed_access_by_status_ids[1])) {
++        $group_conditions->condition($status_conditions = $this->query->andConditionGroup());
++        $status_conditions->condition("$data_table.$published_key", 1);
++        $status_conditions->condition("$access_rights.field_access_rights_value", "embargoed_access");
++        $status_conditions->condition("$embargo.field_embargo_end_date_value", date("Y-m-d"), "<");
++        $this->addScopedConditions($allowed_any_embargoed_access_by_status_ids[1], $status_conditions);
++      }
++    }
++
++    // Metadata only access (nodes)
++    if ($has_any_metadata_only_access_by_status_ids && !empty($access_rights) && $is_node) {
++      foreach ($dm_statuses as $status) {
++        if (!empty($allowed_any_metadata_only_access_by_status_ids[$status])) {
++          $group_conditions->condition($status_conditions = $this->query->andConditionGroup());
++          $status_conditions->condition("$data_table.$published_key", $status);
++          $status_conditions->condition("$access_rights.field_access_rights_value", "metadata_only_access");
++          $this->addScopedConditions($allowed_any_metadata_only_access_by_status_ids[$status], $status_conditions);
++        }
++      }
++    }
++
++    // Metadata only access (media)
++    if ($has_any_metadata_only_access_by_status_ids && !empty($access_rights) && $is_media) {
++      if (!empty($allowed_any_metadata_only_access_by_status_ids[0])) {
++        $group_conditions->condition($status_conditions = $this->query->andConditionGroup());
++        $status_conditions->condition("$access_rights.field_access_rights_value", "metadata_only_access");
++        $this->addScopedConditions($allowed_any_metadata_only_access_by_status_ids[0], $status_conditions);
++      }
++    }
++    // end of major edits
++
+     if ($has_own_ids) {
+       $this->cacheableMetadata->addCacheContexts(['user']);
+       $group_conditions->condition($owner_conditions = $this->query->andConditionGroup());
