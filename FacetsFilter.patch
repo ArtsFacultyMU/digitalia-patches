@@ -1,24 +1,22 @@
 diff --git a/modules/facets_exposed_filters/src/Plugin/views/filter/FacetsFilter.php b/modules/facets_exposed_filters/src/Plugin/views/filter/FacetsFilter.php
-index b1fc303..93d0cba 100644
+index c994eb8..d9efda6 100644
 --- a/modules/facets_exposed_filters/src/Plugin/views/filter/FacetsFilter.php
 +++ b/modules/facets_exposed_filters/src/Plugin/views/filter/FacetsFilter.php
-@@ -138,10 +138,15 @@ class FacetsFilter extends FilterPluginBase {
-       );
-       $query_type_plugin->build();
+@@ -233,12 +233,14 @@ class FacetsFilter extends FilterPluginBase implements ContainerFactoryPluginInt
+         }
+       }
  
--      // Skip facet processing and form rendering if there are no results.
--      if (!$facet->getResults()) {
--        return;
--      }
-+      // begin islandora-muni
-+      // hiding empty facets would change the search form and confuse users
-+
-+      //// Skip facet processing and form rendering if there are no results.
-+      //if (!$facet->getResults()) {
-+      //  return;
-+      //}
-+
++      // begin islandora-muni - disable empty facet hiding to not confuse visitors
+       // Processors may normalize or clear active items. Preserve that updated
+       // state for the rest of the exposed-form rebuild instead of restoring the
+       // raw request values later.
+-      $active_facet_values = $this->normalizeActiveFacetValues(
+-        $facet->getActiveItems(),
+-      );
++      //$active_facet_values = $this->normalizeActiveFacetValues(
++      //  $facet->getActiveItems(),
++      //);
 +      // end islandora-muni
  
-       // Trigger post query stage.
-       $processors = $facet->getProcessorsByStage(ProcessorInterface::STAGE_POST_QUERY);
+       // Load the query_type plugin and execute build.
+       /** @var \Drupal\facets\QueryType\QueryTypeInterface $query_type_plugin */
