@@ -1,22 +1,23 @@
 diff --git a/modules/facets_exposed_filters/src/Plugin/views/filter/FacetsFilter.php b/modules/facets_exposed_filters/src/Plugin/views/filter/FacetsFilter.php
-index c994eb8..d9efda6 100644
+index c994eb8..e88eb0e 100644
 --- a/modules/facets_exposed_filters/src/Plugin/views/filter/FacetsFilter.php
 +++ b/modules/facets_exposed_filters/src/Plugin/views/filter/FacetsFilter.php
-@@ -233,12 +233,14 @@ class FacetsFilter extends FilterPluginBase implements ContainerFactoryPluginInt
-         }
-       }
+@@ -252,13 +252,15 @@ class FacetsFilter extends FilterPluginBase implements ContainerFactoryPluginInt
+       );
+       $query_type_plugin->build();
  
-+      // begin islandora-muni - disable empty facet hiding to not confuse visitors
-       // Processors may normalize or clear active items. Preserve that updated
-       // state for the rest of the exposed-form rebuild instead of restoring the
-       // raw request values later.
--      $active_facet_values = $this->normalizeActiveFacetValues(
--        $facet->getActiveItems(),
--      );
-+      //$active_facet_values = $this->normalizeActiveFacetValues(
-+      //  $facet->getActiveItems(),
-+      //);
++      // begin islandora-muni (disable hiding of empty facets to not confuse visitors)
+       // Skip facet processing and form rendering if there are no results.
+       // Active range facets still need post-query processing so the slider can
+       // render the selected min/max values even when no new buckets are
+       // returned for the narrowed result set.
+-      if (!$facet->getResults() && !$this->hasExposedRangeKeys($facet->getActiveItems())) {
+-        return;
+-      }
++      //if (!$facet->getResults() && !$this->hasExposedRangeKeys($facet->getActiveItems())) {
++      //  return;
++      //}
 +      // end islandora-muni
  
-       // Load the query_type plugin and execute build.
-       /** @var \Drupal\facets\QueryType\QueryTypeInterface $query_type_plugin */
+       // Trigger post query stage.
+       $processors = $facet->getProcessorsByStage(ProcessorInterface::STAGE_POST_QUERY);
