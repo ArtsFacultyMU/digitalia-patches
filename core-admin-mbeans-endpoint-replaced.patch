@@ -1,0 +1,52 @@
+diff --git a/src/SolrConnector/SolrConnectorPluginBase.php b/src/SolrConnector/SolrConnectorPluginBase.php
+--- a/src/SolrConnector/SolrConnectorPluginBase.php
++++ b/src/SolrConnector/SolrConnectorPluginBase.php
+@@ -785,6 +785,47 @@
+     ];
+ 
+     $query = $this->solr->createPing();
++    $solr_version = $this->getSolrVersion(TRUE);
++
++    if (version_compare($solr_version, '10', '>=')) {
++      $query->setHandler('admin/metrics');
++      $query->addParam('wt', 'prometheus');
++      $query->addParam('core', $this->getConfiguration()['core']);
++      $query->addParam('category', 'CORE,UPDATE');
++      $request = $this->solr->createRequest($query);
++      $request->setIsServerRequest(TRUE);
++      $response = $this->solr->executeRequest($request);
++      $responseText = $response->getBody();
++
++      $escapedCore = preg_quote($this->getConfiguration()['core'], '/');
++
++      $metricsMap = [
++        'solr_core_update_docs_pending_commit'  => '@pending_docs',
++        'solr_core_update_deletes_by_id_total'  => '@deletes_by_id',
++        'solr_core_update_deletes_by_query_total' => '@deletes_by_query',
++      ];
++
++      foreach ($metricsMap as $metricName => $summaryKey) {
++        $pattern = '/' . $metricName . '\{[^}]*core="' . $escapedCore . '"[^}]*\}\s+([\d.]+)/';
++
++        if (preg_match($pattern, $responseText, $matches)) {
++          $summary[$summaryKey] = (int) $matches[1];
++        }
++      }
++
++      $summary['@index_size'] = $this->t('No information available.');
++      $sizePattern = '/solr_core_index_size_megabytes\{[^}]*core="' . $escapedCore . '"[^}]*\}\s+([\d.]+)/';
++
++      if (preg_match($sizePattern, $responseText, $matches)) {
++        $megabytes = (float) $matches;
++        $summary['@index_size'] = round($megabytes, 2) . ' MB';
++      }
++
++      $summary['@schema_version'] = $this->getSchemaVersionString(TRUE);
++
++      return $summary;
++    }
++
+     $query->setResponseWriter(Query::WT_JSON);
+     $query->addParam('json.nl', 'map');
+     $query->setHandler('admin/mbeans?stats=true');
+

@@ -27,4 +27,5 @@ If a specific patch needs to be modified after an update, create a new patch and
 | OpenIDConnectSettingsForm.patch | drupal/openid_connect | OpenID: change textarea field type |
 | MintDataCiteDoiAction_vbo.patch | drupal/persistent_identifiers-persistent_identifiers | Fix compatibility with Views Bulk Operations|
 | Dois.patch | drupal/persistent_identifiers-persistent_identifiers | Allow for DOI updates, pair with digitalia_muni_dataset_doi |
+| core-admin-mbeans-endpoint-replaced.patch | drupal/search_api_solr | Fixes statistics report for solr 10. Should be temporary until it is [upstreamed](https://www.drupal.org/project/search_api_solr/issues/3611963). |
 
