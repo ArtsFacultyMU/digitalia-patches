@@ -1,0 +1,13 @@
+diff --git a/core/modules/pgsql/src/Driver/Database/pgsql/Connection.php b/core/modules/pgsql/src/Driver/Database/pgsql/Connection.php
+index 041bd43d07c..857be370165 100644
+--- a/core/modules/pgsql/src/Driver/Database/pgsql/Connection.php
++++ b/core/modules/pgsql/src/Driver/Database/pgsql/Connection.php
+@@ -400,7 +400,7 @@ public function getFullQualifiedTableName($table) {
+    */
+   public function addSavepoint($savepoint_name = 'mimic_implicit_commit') {
+     @trigger_error(__METHOD__ . '() is deprecated in drupal:11.4.0 and is removed from drupal:13.0.0. Use TransactionManager to start a transaction then call ::commitOrRelease() or ::rollback() on it. See https://www.drupal.org/node/3524461', E_USER_DEPRECATED);
+-    if ($this->inTransaction()) {
++    if ($this->inTransaction() && !$this->transactionManager()->has($savepoint_name)) {
+       $this->savepoints[$savepoint_name] = $this->startTransaction($savepoint_name);
+     }
+   }
